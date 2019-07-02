@@ -25,6 +25,24 @@
       "metadata": {
         "description": "Name of the storage account for the Function App - must be unique."
       }
+    },
+    "aad_tenant_id": {
+      "type": "string",
+      "metadata": {
+        "description": "ID of the Azure Active Directory tenant the UI and API clients are in."
+      }
+    },
+    "api_client_id": {
+      "type": "string",
+      "metadata": {
+        "description": "ID of the client for the Function."
+      }
+    },
+    "api_client_secret": {
+      "type": "string",
+      "metadata": {
+        "description": "Secret for the client for the Function."
+      }
     }
   },
   "variables": {
@@ -66,7 +84,7 @@
       "kind": "functionapp",
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
-        "httpsOnly": false,
+        "httpsOnly": true,
         "clientAffinityEnabled": false,
         "siteConfig": {
           "alwaysOn": false,
@@ -93,7 +111,30 @@
             }
           ]
         }
-      }
+      },
+      "resources": [
+        {
+          "name": "authsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [ "[resourceId('Microsoft.Web/sites/', parameters('web_api_name'))]" ],
+          "tags": {
+            "displayName": "websiteAuthSettings"
+          },
+          "properties": {
+            "enabled": true,
+            "unauthenticatedClientAction": "RedirectToLoginPage",
+            "tokenStoreEnabled": true,
+            "defaultProvider": "AzureActiveDirectory",
+            "clientId": "[parameters('api_client_id')]",
+            "clientSecret": "[parameters('api_client_secret')]",
+            "issuer": "[concat('https://sts.windows.net/', parameters('aad_tenant_id'), '/')]",
+            "allowedAudiences": [
+              "[concat('https://', parameters('web_api_name'), '.azurewebsites.net/.auth/login/aad/callback')]"
+            ]
+          }
+        }
+      ]
     },
     {
       "type": "Microsoft.Web/sites",
@@ -107,7 +148,8 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('app_service_plan_name'))]",
         "clientAffinityEnabled": false,
-        "alwaysOn": false
+        "alwaysOn": false,
+        "httpsOnly": true
       }
     }
   ]

@@ -13,6 +13,15 @@
     },
     "storage_act_name": {
       "value": "mystorageacct"
+    },
+    "aad_tenant_id": {
+      "value": "mytenantid"
+    },
+    "api_client_id": {
+      "value": "myapiclientid"
+    },
+    "api_client_secret": {
+      "value": "myapiclientsecret"
     }
   }
 }
